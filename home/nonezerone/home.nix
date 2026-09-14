@@ -21,6 +21,7 @@
     bc
     highlight
     gcc
+    gnumake
     openssl
     openssl.dev
     readline
@@ -42,6 +43,10 @@
     tree-sitter
     fastfetch
     wl-clipboard
+    htop
+    btop
+    qview
+    zathura
   ];
 
   xdg.configFile."niri/config.kdl".source = ./niri.kdl;
@@ -55,6 +60,14 @@
     vimAlias = true;
     withRuby = true;
     withPython3 = true;
+  };
+
+  programs.claude-code = {
+    enable = true;
+    settings = {
+      theme = "dark";
+      enabledPlugins."ruby-lsp@claude-plugins-official" = true;
+    };
   };
 
   programs.zed-editor = {
@@ -105,11 +118,9 @@
     globalConfig = {
       tools = {
         node = "16";
-        ruby = "3.4.9";
-        python = [ "latest" "3.9" ];
+        ruby = [ "latest" "3.4.9"];
+        python = [ "latest" "3.9.6" "3.10" ];
         go = "latest";
-        erlang = "latest";
-        elixir = "latest";
         yarn = "3";
         uv = "latest";
         rust = "latest";
@@ -318,7 +329,7 @@
       theme = {
         mode = "dark";
         source = "builtin";
-        builtin = "Noctalia";
+        builtin = "Ayu";
       };
     };
   };

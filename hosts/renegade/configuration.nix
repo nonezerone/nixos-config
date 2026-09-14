@@ -4,13 +4,15 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  boot.kernelPackages = pkgs.linuxPackages_latest;
+
   boot = {
     initrd.kernelModules = [ "i915" ];
     kernelParams = [ "i915.enable_psr=0" ];
 
   };
 
-  zramSwap.enable = true; # no hibernation, just RAM-backed swap
+  zramSwap.enable = true;
 
   hardware.trackpoint = {
     enable = true;
@@ -54,6 +56,7 @@
       xz
       libxml2
       icu
+      libxcrypt
     ];
   };
 
@@ -154,6 +157,7 @@
     config.services.postgresql.package
     pkgs.libinput
     pkgs.libimobiledevice
+    pkgs.p7zip
   ];
 
   # Do not change after initial install — see the NixOS manual.

@@ -1,14 +1,31 @@
 // niri config — see https://github.com/YaLTeR/niri/wiki/Configuration:-Overview
 // Deployed to ~/.config/niri/config.kdl by home-manager.
 
+workspace "chat"
+workspace "www"
+workspace "etc"
+
+window-rule {
+  match app-id="org.telegram.desktop"
+  open-on-workspace "chat"
+}
+
+window-rule {
+  match app-id="firefox"
+  open-on-workspace "www"
+}
+
+prefer-no-csd
+
 input {
     mod-key "Alt"
+
     keyboard {
         repeat-delay 300
         repeat-rate 50
         xkb {
             layout "us,ru"
-            options "caps:ctrl_modifier"
+            options "caps:ctrl_modifier,grp:win_space_toggle"
         }
     }
 
