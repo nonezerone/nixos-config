@@ -19,6 +19,16 @@
     device = "DualPoint Stick";
   };
 
+  hardware.bluetooth = {
+    enable = true;
+    powerOnBoot = true;
+    settings = {
+      General = {
+        ControllerMode = "bredr";
+      };
+    };
+  };
+
   networking.hostName = "renegade";
   networking.networkmanager.enable = true;
 
@@ -57,6 +67,7 @@
       libxml2
       icu
       libxcrypt
+      pkgs.libxcrypt-legacy
     ];
   };
 
@@ -79,6 +90,7 @@
       {
         name = "nonezerone";
         ensureDBOwnership = true;
+        ensureClauses.superuser = true;
       }
     ];
   };
@@ -126,8 +138,6 @@
     recommendedServices.enable = true;
   };
 
-  hardware.bluetooth.enable = true;
-  hardware.bluetooth.powerOnBoot = true;
   services.power-profiles-daemon.enable = true;
   services.upower.enable = true;
 

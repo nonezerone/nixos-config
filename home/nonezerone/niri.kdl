@@ -45,7 +45,10 @@ input {
 
 layout {
     border {
-      width 1
+      width 3
+    }
+    focus-ring {
+      off
     }
     gaps 0
     center-focused-column "never"

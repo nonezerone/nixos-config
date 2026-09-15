@@ -8,6 +8,13 @@
   # Keep in sync with system.stateVersion in configuration.nix.
   home.stateVersion = "25.05";
 
+  # Home Manager's profile only links bin/etc/lib/sbin/share by default, so
+  # the "dev" outputs' headers (zlib.dev/include, openssl.dev/include, etc.)
+  # never show up in the profile at all - CPPFLAGS pointing at $_p/include
+  # below is a no-op without this. Needed so `mise install python@...`
+  # (and any other from-source build) can find headers on NixOS.
+  home.extraOutputsToInstall = [ "dev" ];
+
   home.packages = with pkgs; [
     firefox
     zoom-us
@@ -24,17 +31,25 @@
     gnumake
     openssl
     openssl.dev
+    openssl.out
     readline
     libyaml
     zlib
     zlib.dev
+    bzip2
+    bzip2.out
+    xz
+    xz.out
     gdbm
     ncurses
     libffi
     gmp
     libxml2
+    libxml2.out
     libxslt
+    libxslt.out
     sqlite
+    sqlite.out
     libpq
     pkg-config
     autoconf
@@ -248,10 +263,19 @@
       # /usr/include or /usr/lib, so nothing is found there by default;
       # $NIX_PROFILES lists every active profile (system + user + home-manager),
       # so walk them all to expose the libraries added in home.packages above.
-      for _p in $NIX_PROFILES; do
+      #
+      # CPython's own ./configure + setup.py combo does NOT consult CPATH or
+      # LIBRARY_PATH (setup.py's detect_modules() only reads CPPFLAGS/LDFLAGS,
+      # and only the values baked into the Makefile at configure time) - so
+      # `mise install python@...` silently drops zlib/_ssl/_bz2/_lzma/etc and
+      # then fails at the ensurepip step during `make install`. Export
+      # CPPFLAGS/LDFLAGS too so CPython's build can find them.
+      for _p in ''${=NIX_PROFILES}; do
         export PKG_CONFIG_PATH="$_p/lib/pkgconfig:$_p/share/pkgconfig:$PKG_CONFIG_PATH"
         export LIBRARY_PATH="$_p/lib:$LIBRARY_PATH"
         export CPATH="$_p/include:$CPATH"
+        export CPPFLAGS="-I$_p/include $CPPFLAGS"
+        export LDFLAGS="-L$_p/lib -Wl,-rpath,$_p/lib $LDFLAGS"
       done
       unset _p
 
