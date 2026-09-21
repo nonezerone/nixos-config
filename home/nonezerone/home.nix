@@ -16,6 +16,7 @@
   home.extraOutputsToInstall = [ "dev" ];
 
   home.packages = with pkgs; [
+    basedpyright
     firefox
     zoom-us
     keepassxc
@@ -51,6 +52,7 @@
     sqlite
     sqlite.out
     libpq
+    mariadb-connector-c
     pkg-config
     autoconf
     automake
@@ -62,6 +64,9 @@
     btop
     qview
     zathura
+    xwayland-satellite
+    pkgs.ripgrep
+    pkgs.yt-dlp
   ];
 
   xdg.configFile."niri/config.kdl".source = ./niri.kdl;
@@ -73,7 +78,7 @@
     defaultEditor = true;
     viAlias = true;
     vimAlias = true;
-    withRuby = true;
+    withRuby = false;
     withPython3 = true;
   };
 
@@ -159,7 +164,7 @@
     enable = true;
     enableZshIntegration = true;
     settings = {
-      font-family = "JetBrains Mono";
+      font-family = "TX-02";
       font-style = "Regular";
       font-feature = "-calt,-liga,-dlig";
       font-size = 11;

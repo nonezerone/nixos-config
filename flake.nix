@@ -19,9 +19,12 @@
       url = "github:noctalia-dev/noctalia";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    # Nightly-built packages (mesa-git among them) for bleeding-edge GPU drivers.
+    chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
   };
 
-  outputs = { self, nixpkgs, home-manager, disko, noctalia, ... }@inputs:
+  outputs = { self, nixpkgs, home-manager, disko, noctalia, chaotic, ... }@inputs:
     {
       nixosConfigurations.renegade = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
@@ -34,6 +37,7 @@
           ./hosts/renegade/disko.nix
 
           noctalia.nixosModules.default
+          chaotic.nixosModules.default
 
           home-manager.nixosModules.home-manager
           {

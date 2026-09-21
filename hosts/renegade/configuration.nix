@@ -9,6 +9,7 @@
   boot = {
     initrd.kernelModules = [ "i915" ];
     kernelParams = [ "i915.enable_psr=0" ];
+    kernelModules = [ "ntsync" ];
 
   };
 
@@ -80,6 +81,24 @@
           rm -f $out/share/terminfo
         '';
       });
+
+      # v0.8.2 has a regression that makes Steam's dropdown/context menus
+      # close ~35ms after opening (pointer-leave misreported for
+      # override-redirect popups). Fixed upstream in Supreeeme/xwayland-satellite#494
+      # but not yet in a release or in nixpkgs — pin to that commit until it lands.
+      xwayland-satellite = prev.xwayland-satellite.overrideAttrs (old: rec {
+        version = "0.8.2-unstable-2026-09-09";
+        src = prev.fetchFromGitHub {
+          owner = "Supreeeme";
+          repo = "xwayland-satellite";
+          rev = "add2795134593faafce60e404a0a75df68e9ee0c";
+          hash = "sha256-0TxfMgqW0/BLD4M942c5DCKYrtPvzsPJwvdcco4LQUM=";
+        };
+        cargoDeps = prev.rustPlatform.fetchCargoVendor {
+          inherit src;
+          hash = "sha256-s1gl9eR6Mt2QLrhfcowstPFjzwE/lz4PJhJzWYHoIHg=";
+        };
+      });
     })
   ];
 
@@ -95,6 +114,9 @@
     ];
   };
 
+  services.mysql.enable = true;
+  services.mysql.package = pkgs.mariadb;
+
   services.redis.servers."" = {
     enable = true;
   };
@@ -106,6 +128,7 @@
 
   hardware.graphics = {
     enable = true;
+    enable32Bit = true; # needed for Steam/Proton
     extraPackages = with pkgs; [
       intel-media-driver # VAAPI, iHD — primary driver for this GPU
       intel-vaapi-driver # legacy i965 fallback (renamed from vaapiIntel, which nixpkgs now throws on)
@@ -113,6 +136,15 @@
     ];
   };
   environment.sessionVariables.LIBVA_DRIVER_NAME = "iHD";
+
+  # Nightly mesa-git build from chaotic-cx/nyx for the latest Intel driver code.
+  chaotic.mesa-git.enable = true;
+
+  programs.steam = {
+    enable = true;
+    remotePlay.openFirewall = true;
+    localNetworkGameTransfers.openFirewall = true;
+  };
 
   programs.niri.enable = true;
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
@@ -157,10 +189,13 @@
     noto-fonts
     noto-fonts-color-emoji
     nerd-fonts.jetbrains-mono
+    jetbrains-mono
     noto-fonts-cjk-sans
     noto-fonts-cjk-serif
     liberation_ttf
   ];
+
+  fonts.fontconfig.defaultFonts.monospace = [ "TX-02" "Comic Code" "JetBrains Mono" ];
 
   environment.systemPackages = [
     pkgs.git

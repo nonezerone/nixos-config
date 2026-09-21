@@ -15,7 +15,19 @@ window-rule {
   open-on-workspace "www"
 }
 
+window-rule {
+  match app-id="^steam$" title="^Steam$"
+  open-focused false
+}
+
 prefer-no-csd
+
+// Xwayland compat: niri has no built-in Xwayland, so apps that hard-code
+// the X11/xcb Qt platform (e.g. zoom) get no display and abort silently
+// without xwayland-satellite providing one.
+environment {
+    DISPLAY ":0"
+}
 
 input {
     mod-key "Alt"
@@ -62,6 +74,7 @@ layout {
     default-column-width { proportion 0.5; }
 }
 
+spawn-at-startup "xwayland-satellite"
 spawn-at-startup "noctalia"
 spawn-at-startup "keepassxc"
 spawn-at-startup "telegram-desktop"
@@ -83,6 +96,8 @@ debug {
 }
 
 binds {
+    Mod+Alt+L allow-when-locked=true { spawn-sh "noctalia msg session lock"; }
+
     Mod+Shift+Slash { show-hotkey-overlay; }
 
     // Apps
