@@ -65,8 +65,10 @@
     qview
     zathura
     xwayland-satellite
+    wget
     pkgs.ripgrep
     pkgs.yt-dlp
+    pkgs.ffmpeg-full
   ];
 
   xdg.configFile."niri/config.kdl".source = ./niri.kdl;
@@ -137,11 +139,11 @@
     enableZshIntegration = true;
     globalConfig = {
       tools = {
-        node = "16";
+        node = ["latest" "16"];
         ruby = [ "latest" "3.4.9"];
         python = [ "latest" "3.9.6" "3.10" ];
         go = "latest";
-        yarn = "3";
+        yarn = ["latest" "3"];
         uv = "latest";
         rust = "latest";
       };
@@ -352,13 +354,38 @@
     };
   };
 
+  gtk = {
+    enable = true;
+    font = {
+      name = "Inter";
+      size = 10;
+    };
+    theme = {
+      name = "Adwaita-dark";
+      package = pkgs.gnome-themes-extra;
+    };
+    gtk3.extraConfig.gtk-application-prefer-dark-theme = true;
+    gtk4.extraConfig.gtk-application-prefer-dark-theme = true;
+    gtk4.theme = config.gtk.theme;
+  };
+
+  qt = {
+    enable = true;
+    platformTheme.name = "gtk3";
+  };
+
   programs.noctalia = {
     enable = true;
     settings = {
       theme = {
         mode = "dark";
-        source = "builtin";
-        builtin = "Ayu";
+        source = "wallpaper";
+        builtin = "Rosé Pine";
+        wallpaper_scheme = "m3-monochrome";
+      };
+      wallpaper = {
+        default.path = ../../assets/wallpapers/turin.png;
+        monitors."eDP-1".path = ../../assets/wallpapers/turin.png;
       };
     };
   };

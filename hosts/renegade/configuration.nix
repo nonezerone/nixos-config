@@ -49,10 +49,23 @@
 
   users.users.nonezerone = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "networkmanager" "video" "input" ];
+    extraGroups = [ "wheel" "networkmanager" "video" "input" "battery_ctl" ];
     initialPassword = "changeme";
     shell = pkgs.zsh;
   };
+
+  # noctalia's "Battery Threshold" plugin writes charge_control_end_threshold
+  # directly (it doesn't go through upower - upower only exposes an on/off
+  # toggle for a fixed vendor threshold, not an arbitrary percentage). This is
+  # the declarative equivalent of the plugin's setup_rules.sh script, which
+  # would otherwise need to be re-run by hand after every udev rule reset.
+  users.groups.battery_ctl = { };
+
+  services.udev.extraRules = ''
+    SUBSYSTEM=="power_supply", KERNEL=="BAT0", \
+      RUN+="${pkgs.coreutils}/bin/chgrp battery_ctl /sys$devpath/charge_control_end_threshold", \
+      RUN+="${pkgs.coreutils}/bin/chmod g+w /sys$devpath/charge_control_end_threshold"
+  '';
 
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
@@ -69,6 +82,7 @@
       icu
       libxcrypt
       pkgs.libxcrypt-legacy
+      vips
     ];
   };
 
@@ -146,7 +160,26 @@
     localNetworkGameTransfers.openFirewall = true;
   };
 
-  programs.niri.enable = true;
+  programs.niri = {
+    enable = true;
+    # niri-session calls `systemctl --user import-environment` with no
+    # variable names, which recent systemd flags as deprecated (a warning
+    # on every login/logout via greetd). Wrap the package so that call
+    # gets an explicit name list instead - same behavior, no warning.
+    # Upstream tracking: https://github.com/niri-wm/niri/issues/254
+    package = pkgs.symlinkJoin {
+      name = "niri-${pkgs.niri.version}-session-fixed";
+      paths = [ pkgs.niri ];
+      passthru = { inherit (pkgs.niri) providedSessions; };
+      postBuild = ''
+        rm $out/bin/niri-session
+        substitute ${pkgs.niri}/bin/niri-session $out/bin/niri-session \
+          --replace-fail 'systemctl --user import-environment' \
+            'systemctl --user import-environment $(printenv | sed -n "s/^\([A-Za-z_][A-Za-z0-9_]*\)=.*/\1/p")'
+        chmod +x $out/bin/niri-session
+      '';
+    };
+  };
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
 
   security.polkit.enable = true;
@@ -154,7 +187,20 @@
 
   xdg.portal = {
     enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-gtk ];
+    extraPortals = [ pkgs.xdg-desktop-portal-gtk pkgs.kdePackages.xdg-desktop-portal-kde ];
+    # Everything defaults to the GTK backend except the file picker, which
+    # uses KDE's Qt-based dialog instead. "common" applies regardless of
+    # what XDG_CURRENT_DESKTOP niri reports.
+    config.common = {
+      default = [ "gtk" ];
+      "org.freedesktop.impl.portal.FileChooser" = [ "kde" ];
+    };
+  };
+
+  qt = {
+    enable = true;
+    platformTheme = "qt5ct";
+    style = "adwaita-dark";
   };
 
   services.greetd = {
@@ -203,6 +249,7 @@
     pkgs.libinput
     pkgs.libimobiledevice
     pkgs.p7zip
+    pkgs.vips
   ];
 
   # Do not change after initial install — see the NixOS manual.

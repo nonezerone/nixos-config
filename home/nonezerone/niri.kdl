@@ -4,10 +4,16 @@
 workspace "chat"
 workspace "www"
 workspace "etc"
+workspace "apps"
 
 window-rule {
   match app-id="org.telegram.desktop"
-  open-on-workspace "chat"
+  open-on-workspace "apps"
+}
+
+window-rule {
+  match app-id="org.keepassxc.KeePassXC"
+  open-on-workspace "apps"
 }
 
 window-rule {
@@ -123,6 +129,12 @@ binds {
     Mod+Right { focus-column-right; }
     Mod+Up    { focus-window-up; }
     Mod+Down  { focus-window-down; }
+
+    // Focus movement (vim-style)
+    Mod+Ctrl+H { focus-column-left; }
+    Mod+Ctrl+J { focus-window-down; }
+    Mod+Ctrl+K { focus-window-up; }
+    Mod+Ctrl+L { focus-column-right; }
 
     // Move windows/columns
     Mod+Shift+Left  { move-column-left; }
