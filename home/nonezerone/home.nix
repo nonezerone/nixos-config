@@ -369,15 +369,6 @@
     gtk4.theme = config.gtk.theme;
   };
 
-  home.pointerCursor = {
-    enable = true;
-    name = "Bibata-Modern-Classic";
-    package = pkgs.bibata-cursors;
-    size = 12;
-    gtk.enable = true;
-    x11.enable = true;
-  };
-
   qt = {
     enable = true;
     platformTheme.name = "gtk3";
