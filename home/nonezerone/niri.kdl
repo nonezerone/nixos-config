@@ -61,6 +61,10 @@ input {
     }
 }
 
+animations {
+    slowdown 0.1
+}
+
 layout {
     border {
       width 3

@@ -4,13 +4,20 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  boot.kernelPackages = pkgs.linuxPackages_latest;
+  # CachyOS's BORE-scheduler kernel (via the chaotic-cx overlay already used
+  # for mesa-git below) — tuned for desktop/gaming latency over stock CFS.
+  boot.kernelPackages = pkgs.linuxPackages_cachyos-bore;
 
   boot = {
     initrd.kernelModules = [ "i915" ];
-    kernelParams = [ "i915.enable_psr=0" ];
+    kernelParams = [
+      "i915.enable_psr=0"
+      "mitigations=off"
+      "nowatchdog"
+    ];
     kernelModules = [ "ntsync" ];
 
+    kernel.sysctl."vm.max_map_count" = 2147483642;
   };
 
   zramSwap.enable = true;
@@ -54,11 +61,6 @@
     shell = pkgs.zsh;
   };
 
-  # noctalia's "Battery Threshold" plugin writes charge_control_end_threshold
-  # directly (it doesn't go through upower - upower only exposes an on/off
-  # toggle for a fixed vendor threshold, not an arbitrary percentage). This is
-  # the declarative equivalent of the plugin's setup_rules.sh script, which
-  # would otherwise need to be re-run by hand after every udev rule reset.
   users.groups.battery_ctl = { };
 
   services.udev.extraRules = ''
@@ -158,6 +160,19 @@
     enable = true;
     remotePlay.openFirewall = true;
     localNetworkGameTransfers.openFirewall = true;
+    extraCompatPackages = [ pkgs.proton-ge-bin ];
+    gamescopeSession.enable = true;
+    extraPackages = [ pkgs.mangohud ];
+  };
+
+  programs.gamescope = {
+    enable = true;
+    capSysNice = true;
+  };
+
+  programs.gamemode = {
+    enable = true;
+    enableRenice = true;
   };
 
   programs.niri = {
