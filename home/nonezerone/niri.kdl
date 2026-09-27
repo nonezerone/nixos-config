@@ -62,7 +62,7 @@ input {
 }
 
 animations {
-    slowdown 0.1
+    slowdown 0.5
 }
 
 layout {
