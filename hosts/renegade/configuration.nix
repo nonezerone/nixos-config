@@ -12,6 +12,7 @@
     initrd.kernelModules = [ "i915" ];
     kernelParams = [
       "i915.enable_psr=0"
+      "i915.enable_dc=0"
       "mitigations=off"
       "nowatchdog"
     ];
@@ -47,7 +48,12 @@
     enable = true;
     packages = [ pkgs.terminus_font ];
     font = "${pkgs.terminus_font}/share/consolefonts/ter-v18n.psf.gz";
-    keyMap = "us";
+    useXkbConfig = true;
+  };
+
+  services.xserver.xkb = {
+    layout = "us,ru";
+    options = "caps:ctrl_modifier,grp:win_space_toggle";
   };
 
   programs.zsh = {
@@ -151,6 +157,15 @@
     enable = true;
     package = pkgs.usbmuxd2;
   };
+
+  virtualisation.podman = {
+    enable = true;
+    dockerCompat = true;                        # `docker` CLI alias backed by podman
+    defaultNetwork.settings.dns_enabled = true;  # container-to-container DNS resolution
+    dockerSocket.enable = true;                  # /run/docker.sock for tools that talk to the Docker API directly
+  };
+
+  virtualisation.containers.registries.settings.unqualified-search-registries = [ "docker.io" ];
 
   hardware.graphics = {
     enable = true;
@@ -264,9 +279,23 @@
     noto-fonts-cjk-sans
     noto-fonts-cjk-serif
     liberation_ttf
+    ipafont
   ];
 
   fonts.fontconfig.defaultFonts.monospace = [ "TX-02" "Comic Code" "JetBrains Mono" ];
+
+  fonts.fontconfig.localConf = ''
+    <match target="pattern">
+      <test name="lang"><string>ja</string></test>
+      <test qual="any" name="family"><string>sans-serif</string></test>
+      <edit name="family" mode="prepend" binding="strong"><string>IPAGothic</string></edit>
+    </match>
+    <match target="pattern">
+      <test name="lang"><string>ja</string></test>
+      <test qual="any" name="family"><string>serif</string></test>
+      <edit name="family" mode="prepend" binding="strong"><string>IPAMincho</string></edit>
+    </match>
+  '';
 
   environment.systemPackages = [
     pkgs.git

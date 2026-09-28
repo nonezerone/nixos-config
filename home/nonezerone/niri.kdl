@@ -12,6 +12,14 @@ window-rule {
 }
 
 window-rule {
+  match app-id=r#"^org\.telegram\.desktop$"# title="^Media viewer$"
+  open-floating true
+  open-on-workspace "apps"
+  geometry-corner-radius 0
+  clip-to-geometry false
+}
+
+window-rule {
   match app-id="org.keepassxc.KeePassXC"
   open-on-workspace "apps"
 }
@@ -35,6 +43,19 @@ environment {
     DISPLAY ":0"
 }
 
+
+output "HDMI-A-1" {
+  mode "1920x1080@120.000"
+  scale 1
+}
+
+// 1920x1080 @ 13.3", ~157 DPI - pin the scale explicitly rather than
+// relying on niri's auto-detection, which is what let the cursor size
+// diverge between this panel and HDMI-A-1 in the first place.
+output "eDP-1" {
+  scale 1.5
+}
+
 input {
     mod-key "Alt"
 
@@ -51,6 +72,10 @@ input {
         tap
         natural-scroll
         accel-profile "adaptive"
+    }
+
+    mouse {
+        scroll-factor 2.0
     }
 
     trackpoint {

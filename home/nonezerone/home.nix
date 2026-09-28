@@ -69,6 +69,7 @@
     pkgs.ripgrep
     pkgs.yt-dlp
     pkgs.ffmpeg-full
+    podman-compose
   ];
 
   xdg.configFile."niri/config.kdl".source = ./niri.kdl;
@@ -352,6 +353,15 @@
 
       battery.disabled = true;
     };
+  };
+
+  home.pointerCursor = {
+    enable = true;
+    name = "breeze_cursors";
+    package = pkgs.kdePackages.breeze;
+    size = 24;
+    gtk.enable = true;
+    x11.enable = true;
   };
 
   gtk = {
