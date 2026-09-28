@@ -67,7 +67,7 @@ animations {
 
 layout {
     border {
-      width 3
+      width 2
     }
     focus-ring {
       off
