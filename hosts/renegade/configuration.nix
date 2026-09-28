@@ -69,6 +69,16 @@
       RUN+="${pkgs.coreutils}/bin/chmod g+w /sys$devpath/charge_control_end_threshold"
   '';
 
+  systemd.services.battery-charge-threshold = {
+    description = "Set battery charge stop threshold";
+    wantedBy = [ "multi-user.target" "suspend.target" "hibernate.target" "hybrid-sleep.target" ];
+    after = [ "sysinit.target" "suspend.target" "hibernate.target" "hybrid-sleep.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.bash}/bin/bash -c 'echo 90 > /sys/class/power_supply/BAT0/charge_control_end_threshold'";
+    };
+  };
+
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   programs.nix-ld = {
