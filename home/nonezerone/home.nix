@@ -24,7 +24,6 @@
     mpv
     gimp
     telegram-desktop
-    # spotify
     fzf
     bc
     highlight
@@ -73,6 +72,9 @@
   ];
 
   xdg.configFile."niri/config.kdl".source = ./niri.kdl;
+
+  # Stable $HOME path for the pipe.mp3 sound bound to XF86Assistant (Copilot key) in niri.kdl.
+  home.file.".local/share/sounds/pipe.mp3".source = ../../assets/pipe.mp3;
 
   xdg.configFile."nvim".source = ./dotfiles/nvim;
 
@@ -150,6 +152,13 @@
       };
       settings = {
         idiomatic_version_file_enable_tools = [ "ruby" ];
+        # mise's ruby core plugin downloads precompiled binaries from
+        # jdx/ruby by default. Those are built for a standard glibc/FHS
+        # Linux (dynamic linker at /lib64/ld-linux*, libs under /usr/lib),
+        # which doesn't exist on NixOS - so the precompiled ruby misbehaves
+        # (missing/mismatched libssl, wrong native extension ABI, etc).
+        # Force ruby-build to compile from source instead.
+        ruby.precompiled_url = "";
       };
     };
   };
@@ -359,7 +368,7 @@
     enable = true;
     name = "breeze_cursors";
     package = pkgs.kdePackages.breeze;
-    size = 24;
+    size = 18;
     gtk.enable = true;
     x11.enable = true;
   };

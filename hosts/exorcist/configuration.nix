@@ -283,6 +283,9 @@
     </match>
   '';
 
+  environment.pathsToLink = [ "/include" ];
+  environment.extraOutputsToInstall = [ "dev" ];
+
   environment.systemPackages = [
     pkgs.git
     config.services.postgresql.package

@@ -21,7 +21,21 @@ window-rule {
 
 window-rule {
   match app-id="org.keepassxc.KeePassXC"
+  exclude title="^Unlock Database - KeePassXC$"
+  exclude title="^KeePassXC - Browser Access Request$"
+  exclude title="^Auto-Type - KeePassXC$"
   open-on-workspace "apps"
+}
+
+// Prompt windows (unlock, browser access request, auto-type picker) should
+// pop up floating and focused on whatever workspace triggered them, not
+// jump over to "apps" with the main window.
+window-rule {
+  match app-id="org.keepassxc.KeePassXC" title="^Unlock Database - KeePassXC$"
+  match app-id="org.keepassxc.KeePassXC" title="^KeePassXC - Browser Access Request$"
+  match app-id="org.keepassxc.KeePassXC" title="^Auto-Type - KeePassXC$"
+  open-floating true
+  open-focused true
 }
 
 window-rule {
@@ -53,7 +67,7 @@ output "HDMI-A-1" {
 // relying on niri's auto-detection, which is what let the cursor size
 // diverge between this panel and HDMI-A-1 in the first place.
 output "eDP-1" {
-  scale 1
+  scale 1.25
 }
 
 input {
@@ -131,7 +145,7 @@ debug {
 }
 
 binds {
-    Mod+Alt+L allow-when-locked=true { spawn-sh "noctalia msg session lock"; }
+    Ctrl+Shift+L allow-when-locked=true { spawn-sh "noctalia msg session lock"; }
 
     Mod+Shift+Slash { show-hotkey-overlay; }
 
@@ -152,6 +166,9 @@ binds {
     XF86MonBrightnessUp { spawn-sh "noctalia msg brightness-up"; }
     XF86MonBrightnessDown { spawn-sh "noctalia msg brightness-down"; }
     XF86AudioMicMute allow-when-locked=true { spawn-sh "wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle"; }
+
+    // Repurposed Copilot key: play pipe.mp3 via ffmpeg -> pulse/pipewire sink
+    XF86Assistant { spawn-sh "ffmpeg -nostdin -loglevel quiet -i ~/.local/share/sounds/pipe.mp3 -f pulse default"; }
 
     // Focus movement
     Mod+Left  { focus-column-left; }
