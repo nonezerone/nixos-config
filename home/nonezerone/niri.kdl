@@ -53,7 +53,7 @@ output "HDMI-A-1" {
 // relying on niri's auto-detection, which is what let the cursor size
 // diverge between this panel and HDMI-A-1 in the first place.
 output "eDP-1" {
-  scale 1.5
+  scale 1
 }
 
 input {

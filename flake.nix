@@ -1,5 +1,5 @@
 {
-  description = "NixOS config for Dell Latitude 5490 - niri + noctalia shell";
+  description = "NixOS config niri + noctalia shell";
 
   inputs = {
     # noctalia tracks recent Quickshell/niri releases, so stay on unstable.
@@ -35,6 +35,28 @@
 
           disko.nixosModules.disko
           ./hosts/renegade/disko.nix
+
+          noctalia.nixosModules.default
+          chaotic.nixosModules.default
+
+          home-manager.nixosModules.home-manager
+          {
+            home-manager.useGlobalPkgs = true;
+            home-manager.useUserPackages = true;
+            home-manager.extraSpecialArgs = { inherit inputs; };
+            home-manager.users.nonezerone = import ./home/nonezerone/home.nix;
+          }
+        ];
+      };
+      nixosConfigurations.exorcist = nixpkgs.lib.nixosSystem {
+        system = "x86_64-linux";
+        specialArgs = { inherit inputs; };
+        modules = [
+          ./hosts/exorcist/configuration.nix
+          ./hosts/exorcist/hardware-configuration.nix
+
+          disko.nixosModules.disko
+          ./hosts/exorcist/disko.nix
 
           noctalia.nixosModules.default
           chaotic.nixosModules.default

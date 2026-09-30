@@ -18,13 +18,13 @@
   home.packages = with pkgs; [
     basedpyright
     firefox
-    zoom-us
+    # zoom-us
     keepassxc
     qbittorrent
     mpv
     gimp
     telegram-desktop
-    spotify
+    # spotify
     fzf
     bc
     highlight
