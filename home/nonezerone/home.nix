@@ -18,11 +18,13 @@
   home.packages = with pkgs; [
     basedpyright
     firefox
-    # zoom-us
+    librewolf
+    zoom-us
     keepassxc
     qbittorrent
-    mpv
     gimp
+    heroic
+    appimage-run
     telegram-desktop
     fzf
     bc
@@ -69,7 +71,31 @@
     pkgs.yt-dlp
     pkgs.ffmpeg-full
     podman-compose
+    # Tracks the "currently active" MPRIS player so mpris-proxy (below) has
+    # one unambiguous target when several apps (mpv, Firefox, Telegram) are
+    # MPRIS-capable at once. Exposes org.mpris.MediaPlayer2.playerctld,
+    # D-Bus-activated automatically - no separate service needed.
+    playerctl
   ];
+
+  # Bridges BlueZ's AVRCP target role to whatever MPRIS player is active, so
+  # AirPods pinch gestures (play/pause/skip) actually control playback.
+  # bluez ships this same unit at $out/etc/systemd/user/mpris-proxy.service,
+  # but NixOS doesn't install packages' /etc/systemd/user units on its own -
+  # it has to be declared here to actually run.
+  systemd.user.services.mpris-proxy = {
+    Unit = {
+      Description = "Bluetooth mpris proxy";
+      Documentation = "man:mpris-proxy(1)";
+      After = [ "dbus.socket" "dbus.service" ];
+      Wants = [ "dbus.socket" ];
+    };
+    Service = {
+      Type = "simple";
+      ExecStart = "${pkgs.bluez}/bin/mpris-proxy";
+    };
+    Install.WantedBy = [ "default.target" ];
+  };
 
   xdg.configFile."niri/config.kdl".source = ./niri.kdl;
 
@@ -77,6 +103,13 @@
   home.file.".local/share/sounds/pipe.mp3".source = ../../assets/pipe.mp3;
 
   xdg.configFile."nvim".source = ./dotfiles/nvim;
+
+  # mpv has no built-in MPRIS support, so without this script it's invisible
+  # to playerctld/mpris-proxy and AirPods gestures can't reach it.
+  programs.mpv = {
+    enable = true;
+    scripts = [ pkgs.mpvScripts.mpris ];
+  };
 
   programs.neovim = {
     enable = true;

@@ -70,6 +70,18 @@ output "eDP-1" {
   scale 1.25
 }
 
+// Keep this in sync with home.pointerCursor in home.nix. niri only reads
+// XCURSOR_SIZE/XCURSOR_THEME once, at its own process startup, and that
+// value has to survive zsh login -> `systemctl --user import-environment`
+// -> niri.service before niri ever sees it - so a home-manager switch alone
+// doesn't change the running compositor's cursor size until niri.service is
+// restarted. Setting it here instead makes it part of niri's own hot-reloaded
+// config, so edits apply immediately on save.
+cursor {
+  xcursor-theme "breeze_cursors"
+  xcursor-size 18
+}
+
 input {
     mod-key "Alt"
 
@@ -86,6 +98,7 @@ input {
         tap
         natural-scroll
         accel-profile "adaptive"
+        accel-speed 0.2
     }
 
     mouse {
