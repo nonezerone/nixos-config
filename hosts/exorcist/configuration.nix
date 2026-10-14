@@ -22,6 +22,70 @@
   hardware.bluetooth = {
     enable = true;
     powerOnBoot = true;
+    settings = {
+      General = {
+        Privacy = "device";
+        JustWorksRepairing = "always";
+        Class = "0x000100";
+        FastConnectable = "true";
+      };
+    };
+  };
+
+  # Many AVRCP headsets (KOSS Porta Pro Wireless confirmed) lose a race in
+  # bluetoothd's avctp.c right when A2DP connects: both sides try to open the
+  # AVRCP control channel at once, bluetoothd logs "avctp_control_confirm()
+  # Control: Refusing unexpected connect" / "Connection refused (111)", and
+  # MediaControl1.Connected on the device sticks at false - so the headset's
+  # play/pause/next/prev buttons do nothing even though audio works fine.
+  # A delayed, explicit ConnectProfile(AVRCP) retry after the device connects
+  # avoids the race and brings the control channel up (verified live).
+  systemd.services.bluetooth-avrcp-reconnect = {
+    description = "Retry AVRCP control connect after BlueZ's avctp cross-connect race";
+    after = [ "bluetooth.service" ];
+    requires = [ "bluetooth.service" ];
+    wantedBy = [ "bluetooth.target" ];
+    serviceConfig = {
+      Restart = "always";
+      RestartSec = 3;
+      ExecStart = pkgs.writeShellScript "bluetooth-avrcp-reconnect" ''
+        set -uo pipefail
+        export PATH="${pkgs.systemd}/bin:${pkgs.glib}/bin:${pkgs.gawk}/bin:${pkgs.coreutils}/bin"
+
+        avrcp_uuid="0000110e-0000-1000-8000-00805f9b34fb"
+
+        try_connect_avrcp() {
+          local path="$1" uuids connected
+          uuids=$(busctl --system get-property org.bluez "$path" org.bluez.Device1 UUIDs 2>/dev/null) || return 0
+          case "$uuids" in *"$avrcp_uuid"*) ;; *) return 0 ;; esac
+
+          for _ in 1 2 3 4 5; do
+            connected=$(busctl --system get-property org.bluez "$path" org.bluez.MediaControl1 Connected 2>/dev/null | awk '{print $2}')
+            [ "$connected" = "true" ] && return 0
+            busctl --system call org.bluez "$path" org.bluez.Device1 ConnectProfile s "$avrcp_uuid" >/dev/null 2>&1
+            sleep 2
+          done
+        }
+
+        gdbus monitor --system --dest org.bluez 2>/dev/null | while IFS= read -r line; do
+          case "$line" in
+            *"org.bluez.Device1"*"'Connected':"*"<true>"*)
+              path="''${line%%:*}"
+              ( sleep 2; try_connect_avrcp "$path" ) &
+              ;;
+          esac
+        done
+      '';
+    };
+  };
+
+  hardware.xpadneo = {
+    enable = true;
+    settings = {
+      # 0 = extended trigger feedback: rumble each trigger independently by
+      # pressure and the active FF effect. 2 disables trigger rumble.
+      trigger_rumble_mode = 0;
+    };
   };
 
   networking.hostName = "exorcist";
@@ -42,13 +106,15 @@
     options = "caps:ctrl_modifier,grp:win_space_toggle";
   };
 
+  services.fwupd.enable = true;
+
   programs.zsh = {
     enable = true;
   };
 
   users.users.nonezerone = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "networkmanager" "video" "input" "battery_ctl" ];
+    extraGroups = [ "wheel" "networkmanager" "video" "input" "battery_ctl" "libvirtd" "kvm" ];
     initialPassword = "changeme";
     shell = pkgs.zsh;
   };
@@ -153,6 +219,22 @@
 
   virtualisation.containers.registries.settings.unqualified-search-registries = [ "docker.io" ];
 
+  # KVM/QEMU via libvirt, managed with virt-manager — for Windows 11 guests.
+  # Win11 needs TPM 2.0 (swtpm) and UEFI Secure Boot; OVMF (incl. the
+  # secure-boot variant) ships with QEMU and is exposed by libvirtd by default.
+  virtualisation.libvirtd = {
+    enable = true;
+    onBoot = "ignore";           # don't autostart guests at boot
+    onShutdown = "shutdown";     # cleanly shut guests down instead of suspending them
+    qemu = {
+      package = pkgs.qemu_kvm;   # host-arch only, smaller than full qemu
+      runAsRoot = false;
+      swtpm.enable = true;
+    };
+  };
+  programs.virt-manager.enable = true;
+  virtualisation.spiceUSBRedirection.enable = true; # pass USB devices into the guest from virt-viewer/virt-manager
+
   hardware.graphics = {
     enable = true;
     enable32Bit = true; # needed for Steam/Proton
@@ -173,6 +255,7 @@
     localNetworkGameTransfers.openFirewall = true;
     extraCompatPackages = [ pkgs.proton-ge-bin ];
     gamescopeSession.enable = true;
+    protontricks.enable = true;
     extraPackages = [ pkgs.mangohud ];
   };
 
@@ -293,6 +376,7 @@
     pkgs.libimobiledevice
     pkgs.p7zip
     pkgs.vips
+    pkgs.virtio-win # Windows guest drivers ISO: attach $(nix eval --raw nixpkgs#virtio-win)/virtio-win.iso
   ];
 
   # Do not change after initial install — see the NixOS manual.

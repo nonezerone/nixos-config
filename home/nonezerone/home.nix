@@ -24,6 +24,7 @@
     qbittorrent
     gimp
     heroic
+    spotify
     appimage-run
     telegram-desktop
     fzf
@@ -125,6 +126,10 @@
     settings = {
       theme = "dark";
       enabledPlugins."ruby-lsp@claude-plugins-official" = true;
+      attribution = {
+        commit = "";
+        pr = "";
+      };
     };
   };
 
@@ -419,6 +424,21 @@
     gtk3.extraConfig.gtk-application-prefer-dark-theme = true;
     gtk4.extraConfig.gtk-application-prefer-dark-theme = true;
     gtk4.theme = config.gtk.theme;
+
+    # Adwaita rounds buttons/entries/headerbars/menus by default; niri's own
+    # compositor-level corners are already square (geometry-corner-radius 0
+    # in niri.kdl) but that only affects window edges, not widget chrome
+    # drawn by GTK itself - so square that off too.
+    gtk3.extraCss = ''
+      *, *:first-child, *:last-child {
+        border-radius: 0 !important;
+      }
+    '';
+    gtk4.extraCss = ''
+      *, *:first-child, *:last-child {
+        border-radius: 0 !important;
+      }
+    '';
   };
 
   qt = {

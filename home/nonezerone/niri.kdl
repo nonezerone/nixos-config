@@ -1,20 +1,29 @@
 // niri config — see https://github.com/YaLTeR/niri/wiki/Configuration:-Overview
 // Deployed to ~/.config/niri/config.kdl by home-manager.
 
-workspace "chat"
+workspace "term"
 workspace "www"
-workspace "etc"
+workspace "chat"
 workspace "apps"
+workspace "etc"
+
+spawn-at-startup "xwayland-satellite"
+spawn-at-startup "noctalia"
+spawn-at-startup "keepassxc"
+spawn-at-startup "Telegram"
+
 
 window-rule {
   match app-id="org.telegram.desktop"
-  open-on-workspace "apps"
+  open-on-workspace "chat"
+  geometry-corner-radius 0
+  clip-to-geometry false
 }
 
 window-rule {
   match app-id=r#"^org\.telegram\.desktop$"# title="^Media viewer$"
   open-floating true
-  open-on-workspace "apps"
+  open-on-workspace "chat"
   geometry-corner-radius 0
   clip-to-geometry false
 }
@@ -46,6 +55,14 @@ window-rule {
 window-rule {
   match app-id="^steam$" title="^Steam$"
   open-focused false
+  open-on-workspace "etc"
+}
+
+window-rule {
+    match app-id="dev.noctalia.Noctalia"
+    open-floating true
+    default-column-width { fixed 1080; }
+    default-window-height { fixed 920; }
 }
 
 prefer-no-csd
@@ -136,22 +153,6 @@ layout {
     default-column-width { proportion 0.5; }
 }
 
-spawn-at-startup "xwayland-satellite"
-spawn-at-startup "noctalia"
-spawn-at-startup "keepassxc"
-spawn-at-startup "telegram-desktop"
-
-window-rule {
-    geometry-corner-radius 0
-    clip-to-geometry true
-}
-
-window-rule {
-    match app-id="dev.noctalia.Noctalia"
-    open-floating true
-    default-column-width { fixed 1080; }
-    default-window-height { fixed 920; }
-}
 
 debug {
     honor-xdg-activation-with-invalid-serial
