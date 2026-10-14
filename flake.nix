@@ -32,19 +32,17 @@
         modules = [
           ./hosts/renegade/configuration.nix
           ./hosts/renegade/hardware-configuration.nix
+          ./hosts/renegade/services.nix
 
           disko.nixosModules.disko
           ./hosts/renegade/disko.nix
-
-          noctalia.nixosModules.default
-          chaotic.nixosModules.default
 
           home-manager.nixosModules.home-manager
           {
             home-manager.useGlobalPkgs = true;
             home-manager.useUserPackages = true;
             home-manager.extraSpecialArgs = { inherit inputs; };
-            home-manager.users.nonezerone = import ./home/nonezerone/home.nix;
+            home-manager.users.nonezerone = import ./home/nonezerone/server.nix;
           }
         ];
       };

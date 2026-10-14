@@ -24,7 +24,6 @@
     qbittorrent
     gimp
     heroic
-    spotify
     appimage-run
     telegram-desktop
     fzf
@@ -72,10 +71,6 @@
     pkgs.yt-dlp
     pkgs.ffmpeg-full
     podman-compose
-    # Tracks the "currently active" MPRIS player so mpris-proxy (below) has
-    # one unambiguous target when several apps (mpv, Firefox, Telegram) are
-    # MPRIS-capable at once. Exposes org.mpris.MediaPlayer2.playerctld,
-    # D-Bus-activated automatically - no separate service needed.
     playerctl
   ];
 

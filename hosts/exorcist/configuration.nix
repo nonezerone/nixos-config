@@ -91,6 +91,12 @@
   networking.hostName = "exorcist";
   networking.networkmanager.enable = true;
 
+  # Tailnet access to renegade (media server) from anywhere: `sudo tailscale up` once.
+  services.tailscale = {
+    enable = true;
+    openFirewall = true; # UDP 41641 for direct peer connections instead of DERP relays
+  };
+
   time.timeZone = "Asia/Tbilisi";
   i18n.defaultLocale = "en_IE.UTF-8";
 
@@ -377,7 +383,15 @@
     pkgs.p7zip
     pkgs.vips
     pkgs.virtio-win # Windows guest drivers ISO: attach $(nix eval --raw nixpkgs#virtio-win)/virtio-win.iso
+    pkgs.cifs-utils # mount.cifs for renegade's Samba shares
+    pkgs.samba # smbclient, for poking at shares from the CLI
+    pkgs.nautilus
   ];
+
+  # Nautilus: gvfs provides smb:// (and trash, mtp, etc.) browsing; dconf
+  # stores its settings.
+  services.gvfs.enable = true;
+  programs.dconf.enable = true;
 
   # Do not change after initial install — see the NixOS manual.
   system.stateVersion = "25.05";
